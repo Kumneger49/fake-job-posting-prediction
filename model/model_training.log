@@ -1,0 +1,117 @@
+Model Training Log
+==================
+
+Goal: Train a DeBERTa-v3-base model for fake job posting classification using proper data handling and class imbalance techniques.
+
+MODEL CONFIGURATION
+------------------
+Model: microsoft/deberta-v3-base
+Parameters: 184,423,682 (~184M)
+Device: CPU (due to MPS compatibility issues)
+Tokenizer: DebertaV2Tokenizer (slow tokenizer, use_fast=False)
+Max sequence length: 256
+Batch size: 8 (train), 8 (eval)
+Learning rate: 2e-5
+Epochs: 3
+Optimizer: AdamW with weight decay 0.01
+
+DATA PROCESSING PIPELINE
+------------------------
+1. Original Dataset: fake_job_postings.csv
+   - Shape: ~18K samples
+   - Class distribution: Highly imbalanced (94% non-fraudulent, 6% fraudulent)
+
+2. Data Processing Steps:
+   - Missing value handling (drop columns/rows with >50% missing)
+   - Feature selection (remove identifiers, constants, highly correlated)
+   - Feature engineering (text length, keyword flags, count features)
+   - Categorical encoding (LabelEncoder with unseen category handling)
+   - Numerical scaling (StandardScaler)
+   - Train/Test split (80/20)
+   - Train/Validation split (80/20 of training data)
+   - SMOTE oversampling (applied ONLY to training data)
+
+3. Final Dataset Structure:
+   - Train: 18,730 samples (9,365 each class - perfectly balanced with SMOTE)
+   - Validation: 2,859 samples (2,308 non-fraudulent, 551 fraudulent - original distribution)
+   - Test: 3,573 samples (2,899 non-fraudulent, 674 fraudulent - original distribution)
+
+ISSUES ENCOUNTERED AND SOLUTIONS
+--------------------------------
+
+1. TrainingArguments Parameter Error:
+   - Issue: 'evaluation_strategy' not recognized
+   - Cause: Transformers 4.53.1 uses 'eval_strategy' instead
+   - Solution: Changed to 'eval_strategy'
+
+2. RuntimeError: element 0 of tensors does not require grad:
+   - Issue: Model parameters not requiring gradients
+   - Cause: MPS (Apple Silicon) compatibility issues with DeBERTa
+   - Solution: Switched to CPU training (no_cuda=True)
+
+3. IndexError: Target 3 is out of bounds:
+   - Issue: Labels contained values other than 0/1
+   - Cause: Processed dataset had scaled values (-0.25, 3.97) instead of binary
+   - Solution: Added binary conversion function
+
+4. Class Imbalance Problem:
+   - Issue: Model predicting only majority class (0.0 precision/recall/F1)
+   - Cause: Severe class imbalance (94% vs 6%)
+   - Solution: Applied SMOTE to training data only
+
+5. Data Leakage Issue:
+   - Issue: Double train/test splitting causing synthetic samples in test set
+   - Cause: Using processed dataset and splitting again
+   - Solution: Created separate train/val/test files in data processing
+
+6. Zero Division Warnings:
+   - Issue: Precision/recall calculation errors when no positive predictions
+   - Solution: Added zero_division=0 parameter to metrics
+
+TRAINING SETUP
+--------------
+- Separate datasets loaded directly (no splitting in training script)
+- Binary label conversion: values > 0 → 1, else → 0
+- Text concatenation: description + requirements
+- Tokenization with padding and truncation
+- Custom metrics function with zero_division handling
+- Model selection based on F1 score
+- Best model saved automatically
+
+EVALUATION STRATEGY
+------------------
+- Validation set: Used for model selection during training
+- Test set: Used for final evaluation (unseen data)
+- Metrics: Accuracy, Precision, Recall, F1-score
+- Classification reports for both validation and test sets
+
+EXPECTED OUTCOMES
+-----------------
+- Balanced training data should prevent "all-zero" predictions
+- Proper train/validation/test separation prevents data leakage
+- SMOTE on training data only maintains test set integrity
+- CPU training ensures compatibility and stability
+
+TRAINING STATUS
+---------------
+- Started: [Current timestamp]
+- Progress: Training in progress
+- Estimated completion: ~5.7 hours
+- Current speed: ~2.94 seconds per iteration
+
+NOTES
+-----
+- Using CPU due to MPS compatibility issues with DeBERTa
+- SMOTE applied only to training data to prevent data leakage
+- Binary conversion handles non-binary values in processed dataset
+- Zero division handling prevents metric calculation errors
+- Proper dataset separation ensures clean evaluation
+
+FILES CREATED
+-------------
+- train_data.csv: Balanced training data (SMOTE applied)
+- val_data.csv: Validation data (original distribution)
+- test_data.csv: Test data (original distribution)
+- deberta_results/: Training checkpoints
+- deberta_logs/: Training logs
+- deberta_best_model/: Best model weights 

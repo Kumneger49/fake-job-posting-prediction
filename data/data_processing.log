@@ -1,0 +1,77 @@
+Data Processing Log
+===================
+
+Goal: Clean, preprocess, and engineer features from a raw job postings dataset for robust machine learning.
+
+1. Load Data
+------------
+import pandas as pd
+df = pd.read_csv('data/fake_job_postings.csv')
+
+2. Visualize Data
+-----------------
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.heatmap(df.isnull(), cbar=False)
+plt.show()
+df['fraudulent'].value_counts().plot(kind='bar')
+plt.show()
+
+3. Handle Missing Values
+-----------------------
+# Drop columns with >50% missing
+df = df.drop(columns=df.columns[df.isnull().mean() * 100 > 50])
+# Drop rows with >50% missing
+df = df.drop(index=df.index[df.isnull().mean(axis=1) * 100 > 50])
+
+4. Feature Selection
+-------------------
+# Drop identifier columns
+if 'job_id' in df.columns:
+    df = df.drop(columns=['job_id'])
+# Drop columns with only one unique value
+df = df.drop(columns=[col for col in df.columns if df[col].nunique() <= 1])
+
+5. Feature Engineering
+---------------------
+df['desc_length'] = df['description'].fillna('').apply(len)
+df['req_length'] = df['requirements'].fillna('').apply(len)
+keywords = ['work from home', 'quick money']
+for kw in keywords:
+    df[f'kw_{kw.replace(" ", "_")}'] = df['description'].fillna('').str.contains(kw, case=False).astype(int)
+
+6. Split Features and Target
+----------------------------
+X = df.drop(columns=['fraudulent'])
+Y = df['fraudulent']
+
+7. Train/Test Split
+-------------------
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42, stratify=Y)
+
+8. Encode Categorical Features
+-----------------------------
+from sklearn.preprocessing import LabelEncoder
+for col in x_train.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    x_train[col] = le.fit_transform(x_train[col].astype(str))
+    x_test[col] = le.transform(x_test[col].astype(str))
+
+9. Scale Numerical Features
+--------------------------
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
+
+10. Oversample Minority Class
+----------------------------
+from imblearn.over_sampling import SMOTE
+smote = SMOTE(random_state=42)
+X_train_resampled, y_train_resampled = smote.fit_resample(x_train, y_train)
+
+11. Save Processed Data
+----------------------
+final_df = pd.concat([pd.DataFrame(X_train_resampled), pd.Series(y_train_resampled, name='fraudulent')], axis=1)
+final_df.to_csv('data/processed_fake_job_postings.csv', index=False) 
