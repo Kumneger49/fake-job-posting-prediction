@@ -43,9 +43,11 @@ ENV/
 *.bin
 *.safetensors
 
-# Logs
+# Logs (but allow specific project logs)
 *.log
 logs/
+!data/data_processing.log
+!model/model_training.log
 
 # Data files (large datasets)
 *.csv
