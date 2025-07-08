@@ -19,10 +19,28 @@ import os  # For file path management
 # For logging API progress and requests
 import logging  # For logging API activity
 
+from fastapi.middleware.cors import CORSMiddleware
+
+# Only create the app ONCE
+app = FastAPI(
+    title="Fake Job Posting Detection API",
+    description="API for DeBERTa-based fake job posting classification",
+    version="1.0"
+)
+
+# Add CORS middleware to the app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Or ["*"] for all origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # --- FastAPI App Initialization ---
 
 # Initialize FastAPI app
-app = FastAPI(title="Fake Job Posting Detection API", description="API for DeBERTa-based fake job posting classification", version="1.0")
+# app = FastAPI(title="Fake Job Posting Detection API", description="API for DeBERTa-based fake job posting classification", version="1.0")
 
 # Set up logging
 logging.basicConfig(
