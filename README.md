@@ -7,8 +7,8 @@ A machine learning project that uses DeBERTa-v3-base to detect fraudulent job po
 This project implements a complete pipeline for detecting fake job postings:
 1. **Data Processing**: Comprehensive data cleaning, feature engineering, and class balancing
 2. **Model Training**: Fine-tuned DeBERTa-v3-base transformer model
-3. **API Development**: REST API for model inference (planned)
-4. **UI Development**: User interface for job posting analysis (planned)
+3. **API Development**: REST API for model inference (**implemented**)
+4. **UI Development**: User interface for job posting analysis (**implemented**)
 
 ## Features
 
@@ -17,6 +17,8 @@ This project implements a complete pipeline for detecting fake job postings:
 - **Comprehensive Data Processing**: Missing value handling, feature engineering, encoding
 - **Proper Evaluation**: Train/validation/test separation with no data leakage
 - **Production Ready**: Model saved and ready for deployment
+- **REST API**: FastAPI backend for real-time inference
+- **Modern UI**: React frontend for user-friendly predictions
 
 ## Model Performance
 
@@ -25,11 +27,6 @@ This project implements a complete pipeline for detecting fake job postings:
 - **Recall**: 97.63% (catches almost all fraudulent jobs)
 - **Precision**: 22.01% (some false positives, requires human review)
 - **Accuracy**: 34.28% (expected for imbalanced dataset)
-
-### Training Progress
-- **Epoch 1**: F1 = 32.32% (learning phase)
-- **Epoch 2**: F1 = 34.22% (improving)
-- **Epoch 3**: F1 = 34.97% (converged)
 
 ## Project Structure
 
@@ -47,6 +44,12 @@ fake-job-posting-prediction/
 │   ├── model_training.log      # Training logs
 │   ├── final_results.md        # Complete results documentation
 │   └── deberta_best_model/     # Best trained model
+├── api/
+│   ├── main.py                 # FastAPI backend
+│   └── ...                     # API code and logs
+├── ui/
+│   ├── src/                    # React frontend source code
+│   └── ...                     # Frontend assets
 ├── .gitignore                  # Git ignore rules
 └── README.md                   # Project documentation
 ```
@@ -59,15 +62,24 @@ fake-job-posting-prediction/
    cd fake-job-posting-prediction
    ```
 
-2. **Create virtual environment**
+2. **Set up Python environment (recommended: pyenv + virtualenv)**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pyenv install 3.10.14
+   pyenv virtualenv 3.10.14 hf310env
+   pyenv activate hf310env
    ```
 
-3. **Install dependencies**
+3. **Install backend dependencies**
    ```bash
-   pip install transformers torch datasets scikit-learn pandas numpy matplotlib seaborn imbalanced-learn
+   pip install -r requirements.txt
+   # or
+   pip install fastapi uvicorn transformers torch sentencepiece pandas numpy scikit-learn imbalanced-learn pydantic loguru datasets kaggle
+   ```
+
+4. **Install frontend dependencies**
+   ```bash
+   cd ui
+   npm install
    ```
 
 ## Usage
@@ -83,6 +95,36 @@ python data_processing.py
 cd model
 python train_deberta.py
 ```
+
+### Start the API Backend
+```bash
+cd api
+uvicorn main:app --reload
+```
+
+### Start the Frontend UI
+```bash
+cd ui
+npm start
+```
+
+### API Usage
+- **POST /predict**: Send a job posting text and receive a prediction (fraudulent/legitimate) and probability.
+- **GET /**: Health check endpoint.
+
+### Frontend Usage
+- Access the React app at [http://localhost:3000](http://localhost:3000)
+- Enter a job posting and click "Predict" to see results.
+
+## Demo
+- The app provides real-time predictions for job postings via a modern web UI.
+- Example: Enter "this is a high paying job, no experience needed and it is remote." and see the prediction.
+
+## Troubleshooting & Tips
+- **CORS errors**: Ensure CORS middleware is enabled in FastAPI and only one app instance is created.
+- **Python version**: Use Python 3.10.x for best compatibility with ML libraries.
+- **Environment issues**: Always activate your virtualenv before running backend commands.
+- **Model always predicts one class**: Check your model, data balance, and retrain if needed.
 
 ## Technical Details
 
@@ -117,13 +159,16 @@ python train_deberta.py
 3. **MPS Compatibility**: Resolved by switching to CPU training
 4. **Binary Label Conversion**: Handled non-binary processed values
 5. **Zero Division Warnings**: Resolved with proper metric handling
+6. **CORS/API Integration**: Fixed CORS and API integration issues for seamless frontend-backend communication
 
 ## Next Steps
 
-1. **API Development**: Create REST API for model inference
-2. **UI Development**: Build user interface for job posting analysis
-3. **Deployment**: Deploy model for production use
-4. **Monitoring**: Implement performance monitoring and model updates
+- [x] Data processing pipeline
+- [x] Model training and evaluation
+- [x] API development and deployment
+- [x] Frontend UI integration
+- [x] Troubleshooting and bugfixes
+- [x] Project documentation
 
 ## Contributing
 
