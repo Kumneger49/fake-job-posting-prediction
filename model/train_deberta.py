@@ -6,6 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments, DebertaV2Tokenizer
 from datasets import Dataset
 import transformers
+import os
 
 print("Transformers version:", transformers.__version__)
 print("Transformers file:", transformers.__file__)
@@ -98,7 +99,8 @@ val_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'la
 test_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
 
 # 6. Load model for binary classification
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
+MODEL_REPO = "Ken4962/fake-job-posting-prediction-model"
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_REPO)
 
 # Move model to device
 model = model.to(device)
