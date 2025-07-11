@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+transformers
+torch
+sentencepiece
+pandas
+numpy
+scikit-learn
+imbalanced-learn
+pydantic
+loguru
+datasets
+kaggle
