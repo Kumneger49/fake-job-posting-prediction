@@ -99,8 +99,8 @@ val_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'la
 test_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
 
 # 6. Load model for binary classification
-MODEL_REPO = "Ken4962/fake-job-posting-prediction-model"
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_REPO)
+MODEL_LOCAL_PATH = './model/deberta_best_model'
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_LOCAL_PATH)
 
 # Move model to device
 model = model.to(device)
