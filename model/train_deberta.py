@@ -78,7 +78,11 @@ print("Test label distribution:", test_dataset['labels'].count(0), "zeros,", tes
 
 # 4. Load DeBERTa tokenizer and model
 MODEL_NAME = 'microsoft/deberta-v3-base'
-tokenizer = DebertaV2Tokenizer.from_pretrained(MODEL_NAME, use_fast=False)
+tokenizer = DebertaV2Tokenizer.from_pretrained(
+    MODEL_NAME,
+    use_fast=False,
+    local_files_only=True
+)
 
 # 5. Tokenization function
 def tokenize_function(examples):
@@ -100,7 +104,7 @@ test_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'l
 
 # 6. Load model for binary classification
 MODEL_LOCAL_PATH = './model/deberta_best_model'
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_LOCAL_PATH)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_LOCAL_PATH, local_files_only=True)
 
 # Move model to device
 model = model.to(device)
